@@ -27,15 +27,7 @@ wstring normalization_of_string(wstring full_text)
 	{
 		int index = full_text[i] - L'À';
 		//using whitelist
-		if (full_text[i] == L'¥' || full_text[i] == L'´')
-			norm_text += L'´';
-		else if (full_text[i] == L'ª' || full_text[i] == L'º')
-			norm_text += L'º';
-		else if (full_text[i] == L'²' || full_text[i] == L'³')
-			norm_text += L'³';
-		else if (full_text[i] == L'¯' || full_text[i] == L'¿')
-			norm_text += L'¿';
-		else if (full_text[i] == L'¨' || full_text[i] == L'¸')
+		if (full_text[i] == L'¨' || full_text[i] == L'¸')
 			norm_text += L'¸';
 		else if (full_text[i] == L' ' || full_text[i] == L'\n')
 			norm_text += L' ';
@@ -72,15 +64,7 @@ wstring removing_spaces_from_text(wstring full_text)
 
 int find_letter_index(wchar_t letter)
 {
-	if (letter == L'´')
-		return(26);
-	else if (letter == L'º')
-		return(27);
-	else if (letter == L'³')
-		return(29);
-	else if (letter == L'¿')
-		return(32);
-	else if (letter == L'¸')
+	if (letter == L'¸')
 		return(32);
 	else if (letter == L' ')
 		return(33);
@@ -169,7 +153,7 @@ double calculating_H2(int **bigram_alphabet, int length, int spaces, string file
 	}
 	file << endl;
 	file.close();
-	return(a * (-1));
+	return((a * (-1))/2);
 }
 
 double calculating_redundancy_of_the_language(double H, int m)
