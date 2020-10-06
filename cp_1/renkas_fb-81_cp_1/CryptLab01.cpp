@@ -84,13 +84,13 @@ void count_letters_in_the_text(int *alphabet, wstring full_text)
 	}
 }
 
-double calculating_H1(int *alphabet, int length)
+double calculating_H1(int *alphabet, int length, int spaces)
 {
 	double a = 0;
 	double p;
 	cout << "Probability of each letter" << endl;
 	wcout << L"à\tá\tâ\tã\tä\tå\tæ\tç\tè\té\tê" << endl;
-	for (int i = 0; i < 33; i++)
+	for (int i = 0; i < 33 + spaces; i++)
 	{
 		p = (double)alphabet[i] / length;
 		cout << fixed << setprecision(4) << p << "\t";
@@ -100,7 +100,7 @@ double calculating_H1(int *alphabet, int length)
 		}
 		if (i == 21)
 		{
-			wcout << endl << L"ö\t÷\tø\tù\tú\tû\tü\tý\tþ\tÿ\t¸" << endl;
+			wcout << endl << L"ö\t÷\tø\tù\tú\tû\tü\tý\tþ\tÿ\t¸\t-" << endl;
 		}
 		if (p != 0)
 		{
@@ -187,19 +187,19 @@ int main()
 	length_with_spaces = full_text.length();
 	length_without_spaces = full_text_without_spaces.length();
 	//àáâãäåæçèéêëìíîïðñòóôõö÷øù´ºü³þÿ¿
-	int *alphabet = new int[33];
-	for (int i = 0; i < 33; i++)
+	int *alphabet = new int[34];
+	for (int i = 0; i < 34; i++)
 	{
 		alphabet[i] = 0;
 	}
 
 	cout << "Counting amount of each letter of the alphabet...";
-	count_letters_in_the_text(alphabet, full_text_without_spaces);
+	count_letters_in_the_text(alphabet, full_text);
 	cout << "done " << endl << "Calculating H1 and redundency..." << endl;
-	H = calculating_H1(alphabet, length_with_spaces);
+	H = calculating_H1(alphabet, length_with_spaces, 1);
 	cout << "Using text with spaces: H1 = " << H << endl;
 	cout << "Redundency: " << calculating_redundancy_of_the_language(H, 34) << endl;
-	H = calculating_H1(alphabet, length_without_spaces);
+	H = calculating_H1(alphabet, length_without_spaces, 0);
 	cout << "Using text without spaces: H1 = " << H << endl;
 	cout << "Redundency: " << calculating_redundancy_of_the_language(H, 33) << endl;
 	cout << endl << "All caclulations for H1 done" << endl;
@@ -236,10 +236,10 @@ int main()
 	cout << "Counting amount of bigrams of the alphabet in text without spaces...";
 	count_bigrams_in_the_text(bigram_alphabet, full_text_without_spaces, 2);
 	cout << "done " << endl << "Calculating H2 and redundency..." << endl;
-	H = calculating_H2(bigram_alphabet, (length_with_spaces - 1) / 2, 1, "with spaces and without intersections");
+	H = calculating_H2(bigram_alphabet, (length_with_spaces) / 2, 1, "with spaces and without intersections");
 	cout << "Using text with spaces and without intersections: H2 = " << H << endl;
 	cout << "Redundency: " << calculating_redundancy_of_the_language(H, pow(34, 2)) << endl;
-	H = calculating_H2(bigram_alphabet, (length_without_spaces - 1) / 2, 0, "without intersections and spaces");
+	H = calculating_H2(bigram_alphabet, (length_without_spaces) / 2, 0, "without intersections and spaces");
 	cout << "Using text without intersections and spaces: H2 = " << H << endl;
 	cout << "Redundency: " << calculating_redundancy_of_the_language(H, pow(33, 2)) << endl;
 	cout << endl << "All caclulations for H2 done" << endl;
