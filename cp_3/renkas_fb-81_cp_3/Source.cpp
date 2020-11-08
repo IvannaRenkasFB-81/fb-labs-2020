@@ -7,11 +7,12 @@
 #include <locale>
 #include <cmath>
 #include <iomanip>
+#include <limits>
 
 using namespace std;
 wstring rus_alphabet = L"абвгдежзийклмнопрстуфхцчшщьыэю€";
 int most_encr[5] = { -1, -1, -1, -1, -1 };
-int most_real[5] = {545, 417, 572, 403, 168};
+int most_real[5] = { 545, 417, 572, 403, 168 };
 
 wstring getting_full_text_in_one_string(wstring filename)
 {
@@ -48,59 +49,26 @@ int gcd(int a, int b)
 
 int find_inverse_element(int a, int mod)
 {
-	int inversed = -1;
-	int q, r, r1 = a, r2 = mod, t, t1 = 0, t2 = 1;
-
-	while (r2 > 0)
-	{
-		q = r1 / r2;
-		r = r1 - q * r2;
-		r1 = r2;
-		r2 = r;
-
-		t = t1 - q * t2;
-		t1 = t2;
-		t2 = t;
-	}
-
-	if (r1 == 1)
-		inversed = t1;
-
-	if (inversed < 0)
-		inversed = inversed + a;
-
-	return inversed;
-}
-
-int modInverse(int a, int m)
-{
-	int m0 = m;
-	int y = 0, x = 1;
-
-	if (m == 1)
+	int x = mod;
+	int y = 0, inversed = 1;
+	int z, u;
+	if (mod == 1)
 		return 0;
 
 	while (a > 1)
 	{
-		// q is quotient 
-		int q = a / m;
-		int t = m;
-
-		// m is remainder now, process same as 
-		// Euclid's algo 
-		m = a % m, a = t;
-		t = y;
-
-		// Update y and x 
-		y = x - q * y;
-		x = t;
+		z = a / mod;
+		u = mod;
+		mod = a % mod;
+		a = u;
+		u = y;
+		y = inversed - z * y;
+		inversed = u;
 	}
+	if (inversed < 0)
+		inversed += x;
 
-	// Make x positive 
-	if (x < 0)
-		x += m0;
-
-	return x;
+	return inversed;
 }
 
 
@@ -139,6 +107,16 @@ void count_bigrams_and_frequencies_in_the_text(int **bigram_alphabet, wstring fu
 	}
 	file << endl;
 	file.close();
+}
+
+void count_letters_frequencies_in_the_text(int *letter_alphabet, wstring full_text)
+{
+	int a = 0;
+	for (int i = 0; i < full_text.length(); i++)
+	{
+		a = find_letter_index(full_text[i]);
+		letter_alphabet[a]++;
+	}
 }
 
 void find_five_most_popular(int **bigram_alphabet)
@@ -180,19 +158,19 @@ void find_five_most_popular(int **bigram_alphabet)
 		else if (most_encr[3] == -1) most_encr[3] = index;
 		else most_encr[4] = index;
 	}
-	
+
 }
 
 wstring decryption(int a, int b, wstring text, int mod)
 {
-	wcout << a << L"   " << b << L"   " << text.substr(0, 10) << "   " << mod << endl;
+	//wcout << a << L"   " << b << L"   " << text.substr(0, 10) << "   " << mod << endl;
 	int x;
 	int y;
 	wstring decrypted;
-	a = modInverse(a, mod);
+	a = find_inverse_element(a, mod);
 	for (int i = 0; i < text.length(); i += 2)
 	{
-		y = find_letter_index(text[i]) * 31 + find_letter_index(text[i+1]);
+		y = find_letter_index(text[i]) * 31 + find_letter_index(text[i + 1]);
 		x = a * (y - b);
 		while (x < 0) x += mod;
 		if (x > mod) x = x % mod;
@@ -202,30 +180,87 @@ wstring decryption(int a, int b, wstring text, int mod)
 	return(decrypted);
 }
 
-int solution_of_linear_equations(int a, int b, int mod)
+int auto_recognizing_plaintext(wstring plaintext)
+{
+	int *letter_frequencies = new int[31];
+	int len = plaintext.length();
+	int min_value = len;
+	int min_index;
+	int max_value = -1;
+	int max_index;
+	for (int i = 0; i < 31; i++)
+	{
+		letter_frequencies[i] = 0;
+	}
+	
+	count_letters_frequencies_in_the_text(letter_frequencies, plaintext);
+	for (int i = 0; i < 31; i++)
+	{
+		if (min_value > letter_frequencies[i])
+		{
+			min_value = letter_frequencies[i];
+			min_index = i;
+		}
+		if (max_value < letter_frequencies[i])
+		{
+			max_value = letter_frequencies[i];
+			max_index = i;
+		}
+	}
+
+	if (letter_frequencies[find_letter_index(L'о')] * 100 / len < 8)
+		return 0;
+	else if (letter_frequencies[find_letter_index(L'а')] * 100 / len < 7)
+		return 0;
+	else if (letter_frequencies[find_letter_index(L'е')] * 100 / len < 6)
+		return 0;
+	else if (letter_frequencies[find_letter_index(L'ф')] * 100 / len > 1)
+		return 0;
+	else if (letter_frequencies[find_letter_index(L'щ')] * 100 / len > 1)
+		return 0;
+	else if (letter_frequencies[find_letter_index(L'ь')] * 100 / len > 1)
+		return 0;
+	wcout << L">> Frequencies of letters" << endl;
+	wcout << L"о -> " << (double)letter_frequencies[find_letter_index(L'о')] * 100 / len << endl;
+	wcout << L"а -> " << (double)letter_frequencies[find_letter_index(L'а')] * 100 / len << endl;
+	wcout << L"е -> " << (double)letter_frequencies[find_letter_index(L'е')] * 100 / len << endl;
+	wcout << L"ф -> " << (double)letter_frequencies[find_letter_index(L'ф')] * 100 / len << endl;
+	wcout << L"щ -> " << (double)letter_frequencies[find_letter_index(L'щ')] * 100 / len << endl;
+	wcout << L"ь -> " << (double)letter_frequencies[find_letter_index(L'ь')] * 100 / len << endl;
+	return 1;
+}
+
+int *solution_of_linear_equations(int a, int b, int mod)
 {
 	int d;
 	int a1, b1, n1, x0; //зм≥нн≥ з формули, об*Їднала пункти 1) ≥ 2.2) в один, бо вони один одного перекривають 
 	int inversed;
+	int *solutions;
 	d = gcd(a, mod);
-	if ((d % b == 0))
+	if (d % b == 0)
 	{
-		return(-1);
+		solutions = new int[1];
+		solutions[0] = -1;
+		return(solutions);
 	}
-	cout << "gcd be like  " << d << endl;
-	a1 = a / d;
-	b1 = b / d;
-	n1 = mod / d;
-	inversed = find_inverse_element(n1, a1);
-	cout << "inversed be like  " << inversed << endl;
-	x0 = (b1 * inversed) % n1;
-	cout << "x0 be like  " << x0 << endl;
-	return(x0);
+	solutions = new int[d + 1];
+	for (int i = 0; i < d; i++)
+	{
+		a1 = a / d;
+		b1 = b / d;
+		n1 = mod / d;
+		inversed = find_inverse_element(a1, n1);
+		x0 = (b1 * inversed) % n1;
+		solutions[i] = x0;
+	}
+	solutions[d] = -1;
+	return(solutions);
 }
 
 void data_for_solution_of_linear_equations(int mod, wstring text)
 {
-	int a, b, X, Y, x1, x2, z = 0;
+	int *solutions;
+	int a, b, X, Y, x1, x2;
 	int y1 = most_encr[0];
 	int y2 = most_encr[1];
 	wstring real_text;
@@ -234,25 +269,34 @@ void data_for_solution_of_linear_equations(int mod, wstring text)
 		x1 = most_real[i];
 		for (int j = 0; j < 5; j++)
 		{
+			if (i == j) continue;
 			x2 = most_real[j];
 			Y = y1 - y2;
 			if (Y < 0) Y += mod;
 			X = x1 - x2;
 			if (X < 0) X += mod;
-			cout << "X: " << X << "  Y: " << Y << endl;
-			a = solution_of_linear_equations(X, Y, mod);
-			if (a < 0) continue;
-			else b = (y1 - a * x1);
-			while (b < 0) b += mod;
-			real_text = decryption(a, b, text, mod);
-			z++;
-			cout << "(" << a << ", " << b << ")" << endl;
-			wcout << text.substr(0, 50) << endl << endl;
-			wcout << real_text.substr(0, 50) << endl << endl;
-			real_text = L"";
+
+			solutions = solution_of_linear_equations(X, Y, mod);
+			int index = 0;
+			while (solutions[index] != -1)
+			{
+				a = solutions[index];
+				if (a < 0) continue;
+				else b = (y1 - a * x1);
+				while (b < 0) b += mod;
+				real_text = decryption(a, b, text, mod);
+
+				if (auto_recognizing_plaintext(real_text) == 1)
+				{
+					cout << "Decrypted." << endl;
+					cout << "Key: (" << a << ", " << b << ")" << endl;
+					wcout << real_text << endl;
+					return;
+				}
+				index++;
+			}
 		}
 	}
-	cout << "amount of keys  " << z << endl;
 }
 
 int main()
@@ -263,6 +307,8 @@ int main()
 	wstring encrypted_text;
 	encrypted_text = getting_full_text_in_one_string(L"D:\\16.txt");
 	encrypted_text = removing_endls(encrypted_text);
+
+	int x = 0;
 
 	int **bigram_alphabet = new int*[31];
 	for (int i = 0; i < 31; i++)
@@ -280,14 +326,8 @@ int main()
 		cout << most_encr[i] << "  ";
 	}
 	cout << endl;
-	for (int i = 0; i < 5; i++)
-	{
-		cout << most_real[i] << "  ";
-	}
-	cout << endl;
+	data_for_solution_of_linear_equations(31 * 31, encrypted_text);
 
-	data_for_solution_of_linear_equations(31*31, encrypted_text);
-	//wcout << decryption(370, 312, encrypted_text, 31*31) << endl;
 	cout << "End Of Program" << endl;
 	system("pause");
 	return 0;
