@@ -192,7 +192,7 @@ int auto_recognizing_plaintext(wstring plaintext)
 	{
 		letter_frequencies[i] = 0;
 	}
-	
+
 	count_letters_frequencies_in_the_text(letter_frequencies, plaintext);
 	for (int i = 0; i < 31; i++)
 	{
@@ -208,25 +208,43 @@ int auto_recognizing_plaintext(wstring plaintext)
 		}
 	}
 
-	if (letter_frequencies[find_letter_index(L'о')] * 100 / len < 8)
+	if ((double)letter_frequencies[find_letter_index(L'о')] / len < 0.08)
+	{
+		wcout << L"Filtering Failed: ";
+		wcout << L"'о' frequency -> " << (double)letter_frequencies[find_letter_index(L'о')] * 100 / len << L" %\n" << endl;
 		return 0;
-	else if (letter_frequencies[find_letter_index(L'а')] * 100 / len < 7)
+	}
+	else if ((double)letter_frequencies[find_letter_index(L'а')] / len < 0.07)
+	{
+		wcout << L"Filtering Failed: ";
+		wcout << L"'а' frequency -> " << (double)letter_frequencies[find_letter_index(L'а')] * 100 / len << L" %\n" << endl;
 		return 0;
-	else if (letter_frequencies[find_letter_index(L'е')] * 100 / len < 6)
+	}
+	else if ((double)letter_frequencies[find_letter_index(L'е')] / len < 0.06)
+	{
+		wcout << L"Filtering Failed: ";
+		wcout << L"'е' frequency -> " << (double)letter_frequencies[find_letter_index(L'е')] * 100 / len << L" %\n" << endl;
 		return 0;
-	else if (letter_frequencies[find_letter_index(L'ф')] * 100 / len > 1)
+	}
+	else if ((double)letter_frequencies[find_letter_index(L'ф')] / len > 0.01)
+	{
+		wcout << L"Filtering Failed: ";
+		wcout << L"'ф' frequency -> " << (double)letter_frequencies[find_letter_index(L'ф')] * 100 / len << L" %\n" << endl;
 		return 0;
-	else if (letter_frequencies[find_letter_index(L'щ')] * 100 / len > 1)
+	}
+	else if ((double)letter_frequencies[find_letter_index(L'щ')] / len > 0.01)
+	{
+		wcout << L"Filtering Failed: ";
+		wcout << L"'щ' frequency -> " << (double)letter_frequencies[find_letter_index(L'щ')] * 100 / len << L" %\n" << endl;
 		return 0;
-	else if (letter_frequencies[find_letter_index(L'ь')] * 100 / len > 1)
+	}
+	else if ((double)letter_frequencies[find_letter_index(L'ь')] / len > 0.02)
+	{
+		wcout << L"Filtering Failed: ";
+		wcout << L"'ь' frequency -> " << (double)letter_frequencies[find_letter_index(L'ь')] * 100 / len << L" %\n" << endl;
 		return 0;
-	wcout << L">> Frequencies of letters" << endl;
-	wcout << L"о -> " << (double)letter_frequencies[find_letter_index(L'о')] * 100 / len << endl;
-	wcout << L"а -> " << (double)letter_frequencies[find_letter_index(L'а')] * 100 / len << endl;
-	wcout << L"е -> " << (double)letter_frequencies[find_letter_index(L'е')] * 100 / len << endl;
-	wcout << L"ф -> " << (double)letter_frequencies[find_letter_index(L'ф')] * 100 / len << endl;
-	wcout << L"щ -> " << (double)letter_frequencies[find_letter_index(L'щ')] * 100 / len << endl;
-	wcout << L"ь -> " << (double)letter_frequencies[find_letter_index(L'ь')] * 100 / len << endl;
+	}
+	wcout << L"Filtering Success" << endl;
 	return 1;
 }
 
@@ -236,24 +254,39 @@ int *solution_of_linear_equations(int a, int b, int mod)
 	int a1, b1, n1, x0; //змінні з формули, об*єднала пункти 1) і 2.2) в один, бо вони один одного перекривають 
 	int inversed;
 	int *solutions;
+	cout << "Solution of linear equation " << b << " = x * " << a << " mod(" << mod << ")\n";
 	d = gcd(a, mod);
-	if (d % b == 0)
+	if (d == 1)
 	{
+		cout << "Solved with 1 solution!" << endl;
+		solutions = new int[2];
+		inversed = find_inverse_element(a, mod);
+		solutions[0] = (b * inversed) % mod;
+		solutions[1] = -1;
+	}
+	else if (d > 1 && b % d != 0)
+	{
+		cout << "Unsolved. 0 solutions found" << endl << endl;
 		solutions = new int[1];
 		solutions[0] = -1;
 		return(solutions);
 	}
-	solutions = new int[d + 1];
-	for (int i = 0; i < d; i++)
+	else
 	{
+		cout << "Solved with " << d << " solutions" << endl;
+		solutions = new int[d + 1];
 		a1 = a / d;
 		b1 = b / d;
 		n1 = mod / d;
 		inversed = find_inverse_element(a1, n1);
 		x0 = (b1 * inversed) % n1;
-		solutions[i] = x0;
+		for (int i = 0; i < d; i++)
+		{
+			solutions[i] = x0 + n1 * i;
+		}
+		solutions[d] = -1;
 	}
-	solutions[d] = -1;
+
 	return(solutions);
 }
 
@@ -275,7 +308,6 @@ void data_for_solution_of_linear_equations(int mod, wstring text)
 			if (Y < 0) Y += mod;
 			X = x1 - x2;
 			if (X < 0) X += mod;
-
 			solutions = solution_of_linear_equations(X, Y, mod);
 			int index = 0;
 			while (solutions[index] != -1)
@@ -285,11 +317,10 @@ void data_for_solution_of_linear_equations(int mod, wstring text)
 				else b = (y1 - a * x1);
 				while (b < 0) b += mod;
 				real_text = decryption(a, b, text, mod);
-
+				cout << "Trying Key: (" << a << ", " << b << ")" << endl;
 				if (auto_recognizing_plaintext(real_text) == 1)
 				{
-					cout << "Decrypted." << endl;
-					cout << "Key: (" << a << ", " << b << ")" << endl;
+					cout << "Decrypted:" << endl;
 					wcout << real_text << endl;
 					return;
 				}
@@ -325,7 +356,7 @@ int main()
 	{
 		cout << most_encr[i] << "  ";
 	}
-	cout << endl;
+	cout << endl << endl;
 	data_for_solution_of_linear_equations(31 * 31, encrypted_text);
 
 	cout << "End Of Program" << endl;
