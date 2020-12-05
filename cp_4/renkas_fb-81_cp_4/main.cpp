@@ -51,7 +51,7 @@ int main()
 	
 	uint512_t k1 = my_rsa.Encrypt(k, B_pair.publicPart);
 	uint512_t S1 = my_rsa.Encrypt(S, B_pair.publicPart);
-	Messege msg_to_B = my_rsa.SendKey(k1, S1, A_pair.publicPart);
+	Message msg_to_B = my_rsa.SendKey(k1, S1, A_pair.publicPart);
 	cout << "Sended message from A -----------------------" << endl;
 	cout << "k1:\t\t" << hex << msg_to_B.data << endl;
 	cout << "S1:\t\t" << hex << msg_to_B.Sign << endl;
@@ -61,7 +61,7 @@ int main()
 	if (choice == 1)
 	{
 		// B SIDE
-		Messege msg_from_A = my_rsa.ReceiveKey(msg_to_B);
+		Message msg_from_A = my_rsa.ReceiveKey(msg_to_B);
 		uint512_t decrypted_k = my_rsa.Decrypt(msg_to_B.data, B_pair.privatePart);
 		uint512_t decrypted_S = my_rsa.Decrypt(msg_to_B.Sign, B_pair.privatePart);
 		cout << "Recieved message to B -----------------------" << endl;
@@ -90,5 +90,6 @@ int main()
 		cout << "Input message at site to verify" << endl;
 	}
 	cout << endl << ">>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
+	system("pause");
 	return 0;
 }
