@@ -13,6 +13,10 @@ KeyPair RSA::GenerateKeyPair()
 	KeyPair keypair;
 	uint256_t p = get_256bit_prime();
 	uint256_t q = get_256bit_prime();
+	while (p == q)
+	{
+		q = get_256bit_prime();
+	}
 	cout << "RSA Data:" << endl;
 	cout << "p: " << p << endl;
 	cout << "q: " << q << endl;
