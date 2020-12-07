@@ -34,19 +34,24 @@ KeyPair RSA::GenerateKeyPair()
 	return keypair;
 }
 
-uint512_t RSA::Encrypt(uint512_t data, PublicKey recivedKey)
+Message RSA::Encrypt(uint512_t data, uint512_t S1, PublicKey recivedKey, PublicKey ownKey)
 {
-	return powm(data, recivedKey.e, recivedKey.n);
+	uint512_t k1 = powm(data, recivedKey.e, recivedKey.n);
+	return SendKey(k1, S1, ownKey);
 }
 
-uint512_t RSA::Decrypt(uint512_t data, PrivateKey ownKey)
+tuple<uint512_t, uint512_t, PublicKey> RSA::Decrypt(Message msg, PrivateKey ownKey)
 {
-	return powm(data, ownKey.d, ownKey.n);
+	Message fromA = ReceiveKey(msg);
+	uint512_t k = powm(fromA.data, ownKey.d, ownKey.n);
+	uint512_t S = powm(fromA.Sign, ownKey.d, ownKey.n);
+	return make_tuple(k, S, fromA.publicKey);
 }
 
-uint512_t RSA::Sign(uint512_t data, PrivateKey ownKey)
+uint512_t RSA::Sign(uint512_t data, PrivateKey ownKey, PublicKey recivedKey)
 {
-	return powm(data, ownKey.d, ownKey.n);
+	uint512_t S = powm(data, ownKey.d, ownKey.n);
+	return powm(S, recivedKey.e, recivedKey.n);
 }
 
 bool RSA::Verify(uint512_t k, uint512_t S, PublicKey recivedKey)

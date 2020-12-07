@@ -45,25 +45,24 @@ int main()
 	cout << endl << ">>>>>>>>>>>>>>>>>>>> RSA ALGORYTHM <<<<<<<<<<<<<<<<<<<<" << endl;
 	// A SIDE after receaved B_pair.publicPart
 	uint512_t k = my_rsa.random_in_range<uint512_t>(1, A_pair.publicPart.n);
-	uint512_t S = my_rsa.Sign(k, A_pair.privatePart);
+	uint512_t S1 = my_rsa.Sign(k, A_pair.privatePart, B_pair.publicPart);
 	cout << "k: " << hex << k << endl;
-	cout << "S: " << hex << S << endl << endl;
+	cout << "S: " << hex << S1 << endl << endl;
 	
-	uint512_t k1 = my_rsa.Encrypt(k, B_pair.publicPart);
-	uint512_t S1 = my_rsa.Encrypt(S, B_pair.publicPart);
-	Message msg_to_B = my_rsa.SendKey(k1, S1, A_pair.publicPart);
+	Message msg_to_B = my_rsa.Encrypt(k, S1, B_pair.publicPart, A_pair.publicPart);
 	cout << "Sended message from A -----------------------" << endl;
 	cout << "k1:\t\t" << hex << msg_to_B.data << endl;
 	cout << "S1:\t\t" << hex << msg_to_B.Sign << endl;
 	cout << "Public key A:\tn = " << hex << msg_to_B.publicKey.n << endl << "\t\te = " << hex << msg_to_B.publicKey.e << endl;
-	cout << "---------------------------------------------" << endl << endl;;
+	cout << "---------------------------------------------" << endl << endl;
 
 	if (choice == 1)
 	{
 		// B SIDE
-		Message msg_from_A = my_rsa.ReceiveKey(msg_to_B);
-		uint512_t decrypted_k = my_rsa.Decrypt(msg_to_B.data, B_pair.privatePart);
-		uint512_t decrypted_S = my_rsa.Decrypt(msg_to_B.Sign, B_pair.privatePart);
+		tuple<uint512_t, uint512_t, PublicKey> data_to_B = my_rsa.Decrypt(msg_to_B, B_pair.privatePart);
+		uint512_t decrypted_k = get<0>(data_to_B);
+		uint512_t decrypted_S = get<1>(data_to_B);
+		PublicKey A_public = get<2>(data_to_B);
 		cout << "Recieved message to B -----------------------" << endl;
 		cout << "k:\t\t" << decrypted_k << endl;
 		cout << "S:\t\t" << decrypted_S << endl;
@@ -75,7 +74,7 @@ int main()
 		{
 			cout << "Data NOT decrypted properly(" << endl;
 		}
-		if (my_rsa.Verify(decrypted_k, decrypted_S, msg_from_A.publicKey) == true)
+		if (my_rsa.Verify(decrypted_k, decrypted_S, A_public) == true)
 		{
 			cout << "Sign VERIFIED!" << endl;
 		}

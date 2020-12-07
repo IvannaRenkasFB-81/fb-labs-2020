@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <tuple>
 
 using namespace boost::multiprecision;
 using namespace boost::random;
@@ -44,12 +45,10 @@ public:
 	RSA();
 	~RSA();
 	KeyPair GenerateKeyPair();
-	uint512_t Encrypt(uint512_t data, PublicKey recivedKey);
-	uint512_t Decrypt(uint512_t data, PrivateKey ownKey);
-	uint512_t Sign(uint512_t data, PrivateKey ownKey);
+	Message Encrypt(uint512_t data, uint512_t S1, PublicKey recivedKey, PublicKey ownKey);
+	tuple <uint512_t, uint512_t, PublicKey> Decrypt(Message msg, PrivateKey ownKey);
+	uint512_t Sign(uint512_t data, PrivateKey ownKey, PublicKey recivedKey);
 	bool Verify(uint512_t k, uint512_t S, PublicKey recivedKey);
-	Message SendKey(uint512_t k, uint512_t S, PublicKey myKey);
-	Message ReceiveKey(Message msg);
 
 	template <typename T>
 	T random_in_range(T buttom, T top)
@@ -61,6 +60,8 @@ public:
 		return generated_x;
 	}
 private:
+	Message SendKey(uint512_t k, uint512_t S, PublicKey myKey);
+	Message ReceiveKey(Message msg);
 	uint256_t get_256bit_prime();
 	bool Miller_Rabin_check(uint256_t p, int k);
 
