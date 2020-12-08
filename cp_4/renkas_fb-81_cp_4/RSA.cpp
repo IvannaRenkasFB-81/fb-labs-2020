@@ -34,18 +34,24 @@ KeyPair RSA::GenerateKeyPair()
 	return keypair;
 }
 
-Message RSA::Encrypt(uint512_t data, uint512_t S1, PublicKey recivedKey, PublicKey ownKey)
+Message RSA::GenerateMessage(uint512_t data, KeyPair myKey, PublicKey recievedKey)
 {
-	uint512_t k1 = powm(data, recivedKey.e, recivedKey.n);
-	return SendKey(k1, S1, ownKey);
+	return SendKey(data, myKey, recievedKey);
 }
 
-tuple<uint512_t, uint512_t, PublicKey> RSA::Decrypt(Message msg, PrivateKey ownKey)
+uint512_t RSA::RecieveMessage(Message msg, KeyPair ownKey)
 {
-	Message fromA = ReceiveKey(msg);
-	uint512_t k = powm(fromA.data, ownKey.d, ownKey.n);
-	uint512_t S = powm(fromA.Sign, ownKey.d, ownKey.n);
-	return make_tuple(k, S, fromA.publicKey);
+	return ReceiveKey(msg, ownKey);
+}
+
+uint512_t RSA::Encrypt(uint512_t data, PublicKey recivedKey)
+{
+	return powm(data, recivedKey.e, recivedKey.n);
+}
+
+uint512_t RSA::Decrypt(uint512_t data, PrivateKey ownKey)
+{
+	return powm(data, ownKey.d, ownKey.n);
 }
 
 uint512_t RSA::Sign(uint512_t data, PrivateKey ownKey, PublicKey recivedKey)
@@ -61,18 +67,24 @@ bool RSA::Verify(uint512_t k, uint512_t S, PublicKey recivedKey)
 	else return false;
 }
 
-Message RSA::SendKey(uint512_t k, uint512_t S, PublicKey myKey)
+Message RSA::SendKey(uint512_t k, KeyPair myKey, PublicKey recievedKey)
 {
 	Message msg;
-	msg.publicKey = myKey;
-	msg.data = k;
-	msg.Sign = S;
+	msg.publicKey = myKey.publicPart;
+	msg.data = Encrypt(k, recievedKey);
+	msg.Sign = Sign(k, myKey.privatePart, recievedKey);
 	return msg;
 }
 
-Message RSA::ReceiveKey(Message msg)
+uint512_t RSA::ReceiveKey(Message msg, KeyPair ownKey)
 {
-	return msg;
+	uint512_t decrypted_k = Decrypt(msg.data, ownKey.privatePart);
+	uint512_t decrypted_S = Decrypt(msg.Sign, ownKey.privatePart);
+	if (Verify(decrypted_k, decrypted_S, msg.publicKey) == true)
+		cout << "Sign VERIFIED!" << endl;
+	else
+		cout << "Sign NOT verified!" << endl;
+	return decrypted_k;
 }
 
 

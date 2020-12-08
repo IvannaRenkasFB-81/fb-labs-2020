@@ -45,8 +45,10 @@ public:
 	RSA();
 	~RSA();
 	KeyPair GenerateKeyPair();
-	Message Encrypt(uint512_t data, uint512_t S1, PublicKey recivedKey, PublicKey ownKey);
-	tuple <uint512_t, uint512_t, PublicKey> Decrypt(Message msg, PrivateKey ownKey);
+	Message GenerateMessage(uint512_t data, KeyPair myKey, PublicKey recievedKey);
+	uint512_t RecieveMessage(Message msg, KeyPair ownKey);
+	uint512_t Encrypt(uint512_t data, PublicKey recivedKey);
+	uint512_t Decrypt(uint512_t data, PrivateKey ownKey);
 	uint512_t Sign(uint512_t data, PrivateKey ownKey, PublicKey recivedKey);
 	bool Verify(uint512_t k, uint512_t S, PublicKey recivedKey);
 
@@ -60,8 +62,8 @@ public:
 		return generated_x;
 	}
 private:
-	Message SendKey(uint512_t k, uint512_t S, PublicKey myKey);
-	Message ReceiveKey(Message msg);
+	Message SendKey(uint512_t k, KeyPair myKey, PublicKey recievedKey);
+	uint512_t ReceiveKey(Message msg, KeyPair ownKey);
 	uint256_t get_256bit_prime();
 	bool Miller_Rabin_check(uint256_t p, int k);
 

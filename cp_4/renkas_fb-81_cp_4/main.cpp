@@ -45,11 +45,8 @@ int main()
 	cout << endl << ">>>>>>>>>>>>>>>>>>>> RSA ALGORYTHM <<<<<<<<<<<<<<<<<<<<" << endl;
 	// A SIDE after receaved B_pair.publicPart
 	uint512_t k = my_rsa.random_in_range<uint512_t>(1, A_pair.publicPart.n);
-	uint512_t S1 = my_rsa.Sign(k, A_pair.privatePart, B_pair.publicPart);
-	cout << "k: " << hex << k << endl;
-	cout << "S: " << hex << S1 << endl << endl;
-	
-	Message msg_to_B = my_rsa.Encrypt(k, S1, B_pair.publicPart, A_pair.publicPart);
+
+	Message msg_to_B = my_rsa.GenerateMessage(k, A_pair, B_pair.publicPart);
 	cout << "Sended message from A -----------------------" << endl;
 	cout << "k1:\t\t" << hex << msg_to_B.data << endl;
 	cout << "S1:\t\t" << hex << msg_to_B.Sign << endl;
@@ -59,28 +56,16 @@ int main()
 	if (choice == 1)
 	{
 		// B SIDE
-		tuple<uint512_t, uint512_t, PublicKey> data_to_B = my_rsa.Decrypt(msg_to_B, B_pair.privatePart);
-		uint512_t decrypted_k = get<0>(data_to_B);
-		uint512_t decrypted_S = get<1>(data_to_B);
-		PublicKey A_public = get<2>(data_to_B);
+		uint512_t recieved_k = my_rsa.RecieveMessage(msg_to_B, B_pair);
 		cout << "Recieved message to B -----------------------" << endl;
-		cout << "k:\t\t" << decrypted_k << endl;
-		cout << "S:\t\t" << decrypted_S << endl;
-		if (decrypted_k == k)
+		cout << "k:\t\t" << recieved_k << endl;
+		if (recieved_k == k)
 		{
 			cout << "Data is decrypted properly!" << endl;
 		}
 		else
 		{
 			cout << "Data NOT decrypted properly(" << endl;
-		}
-		if (my_rsa.Verify(decrypted_k, decrypted_S, A_public) == true)
-		{
-			cout << "Sign VERIFIED!" << endl;
-		}
-		else
-		{
-			cout << "Sign NOT verified!" << endl;
 		}
 		cout << "---------------------------------------------" << endl;
 	}
