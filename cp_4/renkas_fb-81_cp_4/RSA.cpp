@@ -54,10 +54,9 @@ uint512_t RSA::Decrypt(uint512_t data, PrivateKey ownKey)
 	return powm(data, ownKey.d, ownKey.n);
 }
 
-uint512_t RSA::Sign(uint512_t data, PrivateKey ownKey, PublicKey recivedKey)
+uint512_t RSA::Sign(uint512_t data, PrivateKey ownKey)
 {
-	uint512_t S = powm(data, ownKey.d, ownKey.n);
-	return powm(S, recivedKey.e, recivedKey.n);
+	return powm(data, ownKey.d, ownKey.n);
 }
 
 bool RSA::Verify(uint512_t k, uint512_t S, PublicKey recivedKey)
@@ -72,7 +71,8 @@ Message RSA::SendKey(uint512_t k, KeyPair myKey, PublicKey recievedKey)
 	Message msg;
 	msg.publicKey = myKey.publicPart;
 	msg.data = Encrypt(k, recievedKey);
-	msg.Sign = Sign(k, myKey.privatePart, recievedKey);
+	msg.Sign = Sign(k, myKey.privatePart);
+	msg.Sign = Encrypt(msg.Sign, recievedKey);
 	return msg;
 }
 

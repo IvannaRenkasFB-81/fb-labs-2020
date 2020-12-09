@@ -49,7 +49,7 @@ public:
 	uint512_t RecieveMessage(Message msg, KeyPair ownKey);
 	uint512_t Encrypt(uint512_t data, PublicKey recivedKey);
 	uint512_t Decrypt(uint512_t data, PrivateKey ownKey);
-	uint512_t Sign(uint512_t data, PrivateKey ownKey, PublicKey recivedKey);
+	uint512_t Sign(uint512_t data, PrivateKey ownKey);
 	bool Verify(uint512_t k, uint512_t S, PublicKey recivedKey);
 
 	template <typename T>
